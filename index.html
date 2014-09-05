@@ -110,7 +110,7 @@
             viewRatio: 9 / 16,
             init: function () {
                 this.resize();
-                this.start();
+                this.render();
             },
             resize: function () {
                 var winRatio = innerWidth / innerHeight;
@@ -152,7 +152,7 @@
             ctx = view.getContext("2d");
             renderer.init();
             onresize = throttle(function () {
-                renderer.resize();
+                renderer.init();
             });
         }
     </script>
