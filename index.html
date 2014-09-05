@@ -26,6 +26,17 @@
         var unit = 0,
             bg, above, below, player,
             renderer, ctx;
+        function throttle(fn) {
+            var handle;
+            return function () {
+                var context = this, args = arguments;
+                cancelAnimationFrame(handle);
+                handle = requestAnimationFrame(function () {
+                    fn.apply(context, args);
+                    handle = null;
+                });
+            };
+        };
         function u(x) {
             return x * unit;
         }
@@ -93,7 +104,7 @@
         merge(player, circle);
         player.init.circle(4.5, 13, 0.6, "#6de2a9");
         renderer = {
-            loop: null,
+            handle: null,
             renderArray: [bg, above, below, player],
             viewRatio: 9 / 16,
             init: function () {
@@ -124,10 +135,10 @@
                     requestAnimationFrame(frame);
                     that.render();
                 }
-                this.loop = requestAnimationFrame(frame);
+                this.handle = requestAnimationFrame(frame);
             },
             stop: function () {
-                cancelAnimationFrame(this.loop);
+                cancelAnimationFrame(this.handle);
             },
             render: function () {
                 var l = this.renderArray.length;
@@ -139,9 +150,9 @@
         onload = function () {
             ctx = view.getContext("2d");
             renderer.init();
-            onresize = function () {
+            onresize = throttle(function () {
                 renderer.resize();
-            };
+            });
         }
     </script>
 </head>
