@@ -1,0 +1,148 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        #view {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            color: #6de2a9;
+        }
+    </style>
+    <script>
+        var unit = 0,
+            bg, above, below, player,
+            renderer, ctx;
+        function u(x) {
+            return x * unit;
+        }
+        function merge(x, y) {
+            x.init = x.init || {};
+            x.init[y.name] = y.init.bind(x);
+            for (var p in y) {
+                if (p !== "init" && p !== "name") {
+                    x[p] = y[p];
+                }
+            }
+        }
+        var circle = {
+            name: "circle",
+            x: 0,
+            y: 0,
+            r: 0,
+            c: "white",
+            init: function (x, y, r, c) {
+                this.x = x;
+                this.y = y;
+                this.r = r;
+                this.c = c;
+            },
+            draw: function () {
+                ctx.save();
+                ctx.fillStyle = this.c;
+                ctx.beginPath();
+                ctx.arc(u(this.x), u(this.y), u(this.r), 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        };
+        var rect = {
+            name: "rect",
+            x: 0,
+            y: 0,
+            w: 0,
+            h: 0,
+            c: "white",
+            init: function (x, y, w, h, c) {
+                this.x = x;
+                this.y = y;
+                this.w = w;
+                this.h = h;
+                this.c = c;
+            },
+            draw: function () {
+                ctx.save();
+                ctx.fillStyle = this.c;
+                ctx.fillRect(u(this.x), u(this.y), u(this.w), u(this.h));
+                ctx.restore();
+            }
+        };
+        bg = {};
+        merge(bg, rect);
+        bg.init.rect(0, 0, 9, 16, "white");
+        above = {};
+        merge(above, rect);
+        above.init.rect(0, 0, 9, 10, "#a080ef");
+        below = {};
+        merge(below, rect);
+        below.init.rect(0, 10, 9, 6, "#f25e82");
+        player = {};
+        merge(player, circle);
+        player.init.circle(4.5, 13, 0.6, "#6de2a9");
+        renderer = {
+            loop: null,
+            renderArray: [bg, above, below, player],
+            viewRatio: 9 / 16,
+            init: function () {
+                this.resize();
+                this.start();
+            },
+            resize: function () {
+                var winRatio = innerWidth / innerHeight;
+                var width = 0;
+                var height = 0;
+                if (this.viewRatio > winRatio) {
+                    width = innerWidth;
+                    height = innerWidth / this.viewRatio;
+                }
+                else {
+                    width = innerHeight * this.viewRatio;
+                    height = innerHeight;
+                }
+                view.width = width;
+                view.height = height;
+                view.style.marginLeft = -width / 2 + "px";
+                view.style.marginTop = -height / 2 + "px";
+                unit = width / 9;
+            },
+            start: function () {
+                var that = this;
+                function frame() {
+                    requestAnimationFrame(frame);
+                    that.render();
+                }
+                this.loop = requestAnimationFrame(frame);
+            },
+            stop: function () {
+                cancelAnimationFrame(this.loop);
+            },
+            render: function () {
+                var l = this.renderArray.length;
+                for (var i = 0; i < l; i++) {
+                    this.renderArray[i].draw();
+                }
+            }
+        };
+        onload = function () {
+            ctx = view.getContext("2d");
+            renderer.init();
+        }
+    </script>
+</head>
+<body>
+    <canvas id="view"></canvas>
+</body>
+</html>
