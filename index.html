@@ -139,6 +139,9 @@
         onload = function () {
             ctx = view.getContext("2d");
             renderer.init();
+            onresize = function () {
+                renderer.resize();
+            };
         }
     </script>
 </head>
