@@ -2,162 +2,91 @@
 
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <meta charset="utf-8" />
     <title></title>
     <style>
-        html, body {
-            width: 100%;
-            height: 100%;
+        body {
             margin: 0;
-        }
-
-        canvas {
-            display: block;
         }
 
         #view {
             position: absolute;
-            left: 50%;
             top: 50%;
-            color: #6de2a9;
+            left: 50%;
+        }
+
+        #above {
+            height: 10rem;
+            background: #a080ef;
+        }
+
+        #below {
+            height: 6rem;
+            background: #f25e82;
+        }
+
+        #layer {
+            position: absolute;
+            top: 0;
+            width: 9rem;
+            height: 16rem;
+        }
+
+        #player {
+            position: absolute;
+            top: 12.2rem;
+            left: 3.7rem;
+            width: 1.6rem;
+            height: 1.6rem;
+            border-radius: 0.8rem;
+            background: #6de2a9;
         }
     </style>
     <script>
-        var unit = 0,
-            bg, above, below, player,
-            renderer, ctx;
-        function throttle(fn) {
-            var handle;
+        function throttle(func) {
+            var timeout;
             return function () {
                 var context = this, args = arguments;
-                cancelAnimationFrame(handle);
-                handle = requestAnimationFrame(function () {
-                    fn.apply(context, args);
-                    handle = null;
+                cancelAnimationFrame(timeout);
+                timeout = requestAnimationFrame(function () {
+                    func.apply(context, args);
+                    timeout = null;
                 });
             };
         };
-        function u(x) {
-            return x * unit;
+        function resize() {
+            var viewRatio = 9 / 16;
+            var winRatio = innerWidth / innerHeight;
+            var width = 0;
+            var height = 0;
+            if (viewRatio > winRatio) {
+                width = innerWidth;
+                height = innerWidth / viewRatio;
+            }
+            else {
+                width = innerHeight * viewRatio;
+                height = innerHeight;
+            }
+            var style = view.style;
+            style.width = width + "px";
+            style.height = height + "px";
+            style.marginLeft = -width / 2 + "px";
+            style.marginTop = -height / 2 + "px";
+            document.documentElement.style.fontSize = width / 9 + "px";
         }
-        function merge(x, y) {
-            x.init = x.init || {};
-            x.init[y.name] = y.init.bind(x);
-            for (var p in y) {
-                if (p !== "init" && p !== "name") {
-                    x[p] = y[p];
-                }
-            }
-        }
-        var circle = {
-            name: "circle",
-            x: 0,
-            y: 0,
-            r: 0,
-            c: "white",
-            init: function (x, y, r, c) {
-                this.x = x;
-                this.y = y;
-                this.r = r;
-                this.c = c;
-            },
-            draw: function () {
-                ctx.save();
-                ctx.fillStyle = this.c;
-                ctx.beginPath();
-                ctx.arc(u(this.x), u(this.y), u(this.r), 0, Math.PI * 2);
-                ctx.fill();
-                ctx.restore();
-            }
-        };
-        var rect = {
-            name: "rect",
-            x: 0,
-            y: 0,
-            w: 0,
-            h: 0,
-            c: "white",
-            init: function (x, y, w, h, c) {
-                this.x = x;
-                this.y = y;
-                this.w = w;
-                this.h = h;
-                this.c = c;
-            },
-            draw: function () {
-                ctx.save();
-                ctx.fillStyle = this.c;
-                ctx.fillRect(u(this.x), u(this.y), u(this.w), u(this.h));
-                ctx.restore();
-            }
-        };
-        bg = {};
-        merge(bg, rect);
-        bg.init.rect(0, 0, 9, 16, "white");
-        above = {};
-        merge(above, rect);
-        above.init.rect(0, 0, 9, 10, "#a080ef");
-        below = {};
-        merge(below, rect);
-        below.init.rect(0, 10, 9, 6, "#f25e82");
-        player = {};
-        merge(player, circle);
-        player.init.circle(4.5, 13, 0.6, "#6de2a9");
-        renderer = {
-            handle: null,
-            renderArray: [bg, above, below, player],
-            viewRatio: 9 / 16,
-            init: function () {
-                this.resize();
-                this.render();
-            },
-            resize: function () {
-                var winRatio = innerWidth / innerHeight;
-                var width = 0;
-                var height = 0;
-                if (this.viewRatio > winRatio) {
-                    width = innerWidth;
-                    height = innerWidth / this.viewRatio;
-                }
-                else {
-                    width = innerHeight * this.viewRatio;
-                    height = innerHeight;
-                }
-                view.width = width;
-                view.height = height;
-                view.style.marginLeft = -width / 2 + "px";
-                view.style.marginTop = -height / 2 + "px";
-                unit = width / 9;
-            },
-            start: function () {
-                var that = this;
-                function frame() {
-                    requestAnimationFrame(frame);
-                    that.render();
-                }
-                this.handle = requestAnimationFrame(frame);
-            },
-            stop: function () {
-                cancelAnimationFrame(this.handle);
-            },
-            render: function () {
-                var l = this.renderArray.length;
-                for (var i = 0; i < l; i++) {
-                    this.renderArray[i].draw();
-                }
-            }
-        };
         onload = function () {
-            ctx = view.getContext("2d");
-            renderer.init();
-            onresize = throttle(function () {
-                renderer.init();
-            });
-        }
+            resize();
+            onresize = throttle(resize);
+        };
     </script>
 </head>
 <body>
-    <canvas id="view"></canvas>
+    <div id="view">
+        <div id="above"></div>
+        <div id="below"></div>
+        <div id="layer">
+            <div id="player"></div>
+        </div>
+    </div>
 </body>
 </html>
