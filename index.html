@@ -10,6 +10,11 @@
             margin: 0;
         }
 
+        #info {
+            position: absolute;
+            font-size: 1rem;
+        }
+
         #view {
             position: absolute;
             top: 50%;
@@ -119,6 +124,7 @@
                     y += vy * deltaT;
                     style.left = x - rect.width / 2 + "px";
                     style.top = y - rect.height / 2 + "px";
+                    console.log(vx * deltaT);
                 }
                 else {
                     style.left = x1 - rect.width / 2 + "px";
@@ -149,5 +155,6 @@
             <div id="iBelow" class="below"></div>
         </div>
     </div>
+    <div id="info">1</div>
 </body>
 </html>
