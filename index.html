@@ -67,7 +67,7 @@
         };
         function resize() {
             var viewRatio = 9 / 16;
-            var winRatio = innerWidth / innerHeight;
+            var winRatio = window.innerWidth / window.innerHeight;
             var w, h;
             if (viewRatio > winRatio) {
                 w = innerWidth;
@@ -129,8 +129,8 @@
             }
             id = requestAnimationFrame(render);
         }
-        onload = function () {
-            onresize = throttle(resize);
+        window.onload = function () {
+            window.onresize = throttle(resize);
             resize();
             iBelow.addEventListener("touchstart", iBelowListener);
         };
