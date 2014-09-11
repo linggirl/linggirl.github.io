@@ -86,6 +86,7 @@
             var rect = view.getBoundingClientRect();
             left = rect.left;
             top = rect.top;
+            console.log(left, top);
         }
         function iBelowListener(e) {
             e.preventDefault();
@@ -110,7 +111,7 @@
             var y;
             var style = player.style;
             function render() {
-                requestAnimationFrame(render);
+                id = requestAnimationFrame(render);
                 var now = Date.now();
                 deltaT = now - t;
                 t = now;
@@ -127,7 +128,7 @@
                     cancelAnimationFrame(id);
                 }
             }
-            id = requestAnimationFrame(render);
+            render();
         }
         window.onload = function () {
             window.onresize = throttle(resize);
