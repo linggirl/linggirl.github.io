@@ -91,8 +91,8 @@
             e.preventDefault();
             var touch = e.changedTouches[0];
             var rect = player.getBoundingClientRect();
-            var x0 = rect.left - viewLeft;
-            var y0 = rect.top - viewTop;
+            var x0 = rect.left + rect.width / 2 - viewLeft;
+            var y0 = rect.top + rect.height / 2 - viewTop;
             var x1 = touch.clientX - viewLeft;
             var y1 = touch.clientY - viewTop;
             var deltaX = x1 - x0;
@@ -117,12 +117,12 @@
                 x += vx * deltaT;
                 if ((x1 - x) / deltaX > 0) {
                     y += vy * deltaT;
-                    style.left = x + "px";
-                    style.top = y + "px";
+                    style.left = x - rect.width / 2 + "px";
+                    style.top = y - rect.height / 2 + "px";
                 }
                 else {
-                    style.left = x1 + "px";
-                    style.top = y1 + "px";
+                    style.left = x1 - rect.width / 2 + "px";
+                    style.top = y1 - rect.height / 2 + "px";
                     cancelAnimationFrame(id);
                 }
             }
