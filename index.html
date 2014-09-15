@@ -6,83 +6,74 @@
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
     <title></title>
     <style>
-        html {
-            height: 100%;
-        }
-
-        body {
-            height: 100%;
+        * {
             margin: 0;
+            padding: 0;
         }
 
-        #view {
+        html, body {
+            height: 100%;
+        }
+
+        .center {
             position: absolute;
             top: 50%;
             left: 50%;
+            transform: translate(-50%, -50%);
         }
 
-        canvas {
-            display: block;
+        #game > * {
+            position: absolute;
+        }
+
+        #touch {
+            width: 100%;
+            height: 100%;
         }
     </style>
-    <script src="three.js"></script>
     <script>
         "use strict";
-
+        var unit, id, ctx;
+        function u(x) {
+            return x * unit;
+        }
+        function resize() {
+            var ratio = 9 / 16;
+            var winRatio = window.innerWidth / window.innerHeight;
+            var width, height;
+            if (ratio > winRatio) {
+                width = innerWidth;
+                height = innerWidth / ratio;
+            }
+            else {
+                width = innerHeight * ratio;
+                height = innerHeight;
+            }
+            game.style.width = width + "px";
+            game.style.height = height + "px";
+            view.width = width;
+            view.height = height;
+            unit = width / 9;
+        }
+        function render() {
+            id = requestAnimationFrame(render);
+            ctx.fillStyle = "#a080ef";
+            ctx.fillRect(0, 0, u(9), u(10));
+            ctx.fillStyle = "#f25e82";
+            ctx.fillRect(0, u(10), u(9), u(6));
+        }
         window.onload = function () {
-            var viewWidth, viewHeight;
-            resizeView();
-            var scene = new THREE.Scene();
-            var camera = new THREE.OrthographicCamera(-viewWidth / 2, viewWidth / 2, viewHeight / 2, -viewHeight / 2, 1, 3);
-            var renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(viewWidth, viewHeight);
-            view.appendChild(renderer.domElement);
-            var material = new THREE.MeshBasicMaterial({
-                color: 0x0000ff
-            });
-            var radius = 50;
-            var segments = 32;
-            var circleGeometry = new THREE.CircleGeometry(radius, segments);
-            var circle = new THREE.Mesh(circleGeometry, material);
-            scene.add(circle);
-            camera.position.z = 2;
-            var render = function () {
-                requestAnimationFrame(render);
-                renderer.render(scene, camera);
-            };
+            ctx = view.getContext("2d");
+            resize();
             render();
-            window.onresize = function () {
-                resizeView();
-            };
-            function resizeView() {
-                var ratio = 9 / 16;
-                var winRatio = window.innerWidth / window.innerHeight;
-                if (ratio > winRatio) {
-                    viewWidth = innerWidth;
-                    viewHeight = innerWidth / ratio;
-                }
-                else {
-                    viewWidth = innerHeight * ratio;
-                    viewHeight = innerHeight;
-                }
-                var style = view.style;
-                style.width = viewWidth + "px";
-                style.height = viewHeight + "px";
-                style.marginLeft = -viewWidth / 2 + "px";
-                style.marginTop = -viewHeight / 2 + "px";
-            }
-            function resizeScene() {
-                camera.left = -viewWidth / 2;
-                camera.right = viewWidth / 2;
-                camera.top = viewHeight / 2;
-                camera.bottom = -viewHeight / 2;
-                camera.updateProjectionMatrix();
-                renderer.setSize(viewWidth, viewHeight);
-            }
+            window.onresize = resize;
         };
     </script>
 </head>
 <body>
-    <div id="view"></div>
+    <div id="game" class="center">
+        <canvas id="view"></canvas>
+        <div id="touch"></div>
+    </div>
 </body>
 </html>
