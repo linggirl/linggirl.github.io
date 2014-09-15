@@ -24,6 +24,7 @@
         #game > * {
             position: absolute;
         }
+
         #touch {
             width: 100%;
             height: 100%;
@@ -42,10 +43,10 @@
             var width, height;
             if (ratio > winRatio) {
                 width = innerWidth;
-                height = innerWidth / ratio;
+                height = Math.round(innerWidth / ratio);
             }
             else {
-                width = innerHeight * ratio;
+                width = Math.round(innerHeight * ratio);
                 height = innerHeight;
             }
             game.style.width = width + "px";
