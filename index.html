@@ -35,17 +35,30 @@
 
         #above {
             height: 60%;
-            background-color:#b6ff00;
         }
 
         #below {
             height: 40%;
-            background-color:#ff6a00;
         }
     </style>
     <script>
         "use strict";
-
+        var ctx, unit, gameLeft, gameTop;
+        var player = {
+            x: 4.5,
+            y: 13,
+            destX: 4.5,
+            destY: 13,
+            v: 0.1,
+            sin: 0,
+            cos: Math.PI / 2
+        };
+        function n(x) {
+            return x * unit;
+        }
+        function u(x) {
+            return x / unit;
+        }
         function resize() {
             var ratio = 9 / 16;
             var winRatio = window.innerWidth / window.innerHeight;
@@ -62,15 +75,54 @@
             game.style.height = height + "px";
             view.width = width;
             view.height = height;
+            unit = width / 9;
+            gameLeft = game.getBoundingClientRect().left;
+            gameTop = game.getBoundingClientRect().top;
         }
-        function belowTouchStart(e) {
-            e.preventDefault();
-            console.log(e);
+        function belowTouchStart(evt) {
+            evt.preventDefault();
+            var e = {};
+            if (evt.type === "touchstart") {
+                e.clientX = evt.changedTouches[0].clientX;
+                e.clientY = evt.changedTouches[0].clientY;
+            }
+            else {
+                e.clientX = evt.clientX;
+                e.clientY = evt.clientY;
+            }
+            player.destX = u(e.clientX - gameLeft);
+            player.destY = u(e.clientY - gameTop);
+            var deltaX = player.destX - player.x;
+            var deltaY = player.destY - player.y;
+            var L = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
+            player.sin = deltaY / L;
+            player.cos = deltaX / L;
+        }
+        function render() {
+            requestAnimationFrame(render);
+            if (Math.abs(player.destX - player.x) < Math.abs(player.v * player.cos)) {
+                player.x = player.destX;
+                player.y = player.destY;
+            }
+            else {
+                player.x += player.v * player.cos;
+                player.y += player.v * player.sin;
+            }
+            ctx.fillStyle = "#a080ef";
+            ctx.fillRect(0, 0, view.width, n(10));
+            ctx.fillStyle = "#f25e82";
+            ctx.fillRect(0, n(10), view.width, n(6));
+            ctx.fillStyle = "#6de2a9";
+            ctx.beginPath();
+            ctx.arc(n(player.x), n(player.y), n(0.6), 0, Math.PI * 2);
+            ctx.fill();
         }
         window.onload = function () {
+            ctx = view.getContext("2d");
             resize();
             below.addEventListener("mousedown", belowTouchStart);
             below.addEventListener("touchstart", belowTouchStart);
+            render();
             window.onresize = resize;
         };
     </script>
