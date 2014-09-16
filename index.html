@@ -31,7 +31,16 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            background: pink;
+        }
+
+        #above {
+            height: 60%;
+            background-color:#b6ff00;
+        }
+
+        #below {
+            height: 40%;
+            background-color:#ff6a00;
         }
     </style>
     <script>
@@ -54,9 +63,13 @@
             view.width = width;
             view.height = height;
         }
-
+        function belowTouchStart(e) {
+            console.log(e);
+        }
         window.onload = function () {
             resize();
+            below.addEventListener("mousedown", belowTouchStart);
+            below.addEventListener("touchstart", belowTouchStart);
             window.onresize = resize;
         };
     </script>
@@ -64,7 +77,10 @@
 <body>
     <div id="game" class="center">
         <canvas id="view"></canvas>
-        <div id="touch"></div>
+        <div id="touch">
+            <div id="above"></div>
+            <div id="below"></div>
+        </div>
     </div>
 </body>
 </html>
