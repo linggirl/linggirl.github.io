@@ -51,7 +51,8 @@
             destY: 13,
             v: 0.1,
             sin: 0,
-            cos: Math.PI / 2
+            cos: Math.PI / 2,
+            reach:true
         };
         function n(x) {
             return x * unit;
@@ -90,6 +91,7 @@
                 e.clientX = evt.clientX;
                 e.clientY = evt.clientY;
             }
+            player.reach = false;
             player.destX = u(e.clientX - gameLeft);
             player.destY = u(e.clientY - gameTop);
             var deltaX = player.destX - player.x;
@@ -100,7 +102,17 @@
         }
         function render() {
             requestAnimationFrame(render);
-            if (Math.abs(player.destX - player.x) < Math.abs(player.v * player.cos)) {
+            if (player.sin === 0) {
+                if (Math.abs(player.destX - player.x) <= Math.abs(player.v * player.cos)) {
+                    player.reach = true;
+                }
+            }
+            else {
+                if (Math.abs(player.destY - player.y) <= Math.abs(player.v * player.sin)) {
+                    player.reach = true;
+                }
+            }
+            if (player.reach) {
                 player.x = player.destX;
                 player.y = player.destY;
             }
