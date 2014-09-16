@@ -64,6 +64,7 @@
             view.height = height;
         }
         function belowTouchStart(e) {
+            e.preventDefault();
             console.log(e);
         }
         window.onload = function () {
