@@ -43,16 +43,18 @@
     </style>
     <script>
         "use strict";
-        var ctx, unit, gameLeft, gameTop;
+        var ctx, unit, gameLeft, gameTop, now, t;
         var player = {
             x: 4.5,
             y: 13,
             destX: 4.5,
             destY: 13,
-            v: 0.1,
+            v: 9,
             sin: 0,
             cos: Math.PI / 2,
-            reach:true
+            reach: true,
+            deltaX: 0,
+            deltaY: 0
         };
         function n(x) {
             return x * unit;
@@ -99,26 +101,34 @@
             var L = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
             player.sin = deltaY / L;
             player.cos = deltaX / L;
+            player.deltaX = deltaX;
+            player.deltaY = deltaY;
         }
         function render() {
             requestAnimationFrame(render);
-            if (player.sin === 0) {
-                if (Math.abs(player.destX - player.x) <= Math.abs(player.v * player.cos)) {
+            var _now = Date.now();
+            t = (_now - now)/1000;
+            now = _now;
+            player.x += player.v * player.cos * t;
+            player.y += player.v * player.sin * t;
+            if (player.deltaX) {
+                if ((player.destX - player.x) / player.deltaX <= 0) {
                     player.reach = true;
                 }
             }
             else {
-                if (Math.abs(player.destY - player.y) <= Math.abs(player.v * player.sin)) {
+                if (player.deltaY) {
+                    if ((player.destY - player.y) / player.deltaY <= 0) {
+                        player.reach = true;
+                    }
+                }
+                else {
                     player.reach = true;
                 }
             }
             if (player.reach) {
                 player.x = player.destX;
                 player.y = player.destY;
-            }
-            else {
-                player.x += player.v * player.cos;
-                player.y += player.v * player.sin;
             }
             ctx.fillStyle = "#a080ef";
             ctx.fillRect(0, 0, view.width, n(10));
@@ -134,6 +144,7 @@
             resize();
             below.addEventListener("mousedown", belowTouchStart);
             below.addEventListener("touchstart", belowTouchStart);
+            now = Date.now();
             render();
             window.onresize = resize;
         };
