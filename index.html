@@ -43,7 +43,7 @@
     </style>
     <script>
         "use strict";
-        var ctx, unit, gameLeft, gameTop, now, t;
+        var ctx, unit, gameLeft, gameTop, now, t, r = 0.6;
         var player = {
             x: 4.5,
             y: 13,
@@ -94,8 +94,22 @@
                 e.clientY = evt.clientY;
             }
             player.reach = false;
-            player.destX = u(e.clientX - gameLeft);
-            player.destY = u(e.clientY - gameTop);
+            var destX = u(e.clientX - gameLeft);
+            var destY = u(e.clientY - gameTop);
+            if (9 - destX < r) {
+                destX = 9 - r;
+            }
+            else if (destX < r) {
+                destX = r;
+            }
+            if (destY - 10 < r) {
+                destY = 10 + r;
+            }
+            else if (16 - destY < r) {
+                destY = 16 - r;
+            }
+            player.destX = destX;
+            player.destY = destY;
             var deltaX = player.destX - player.x;
             var deltaY = player.destY - player.y;
             var L = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
@@ -107,7 +121,7 @@
         function render() {
             requestAnimationFrame(render);
             var _now = Date.now();
-            t = (_now - now)/1000;
+            t = (_now - now) / 1000;
             now = _now;
             player.x += player.v * player.cos * t;
             player.y += player.v * player.sin * t;
@@ -136,7 +150,7 @@
             ctx.fillRect(0, n(10), view.width, n(6));
             ctx.fillStyle = "#6de2a9";
             ctx.beginPath();
-            ctx.arc(n(player.x), n(player.y), n(0.6), 0, Math.PI * 2);
+            ctx.arc(n(player.x), n(player.y), n(r), 0, Math.PI * 2);
             ctx.fill();
         }
         window.onload = function () {
