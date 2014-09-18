@@ -34,16 +34,17 @@
         }
 
         #above {
-            height: 60%;
+            height: 62.5%;
         }
 
         #below {
-            height: 40%;
+            height: 37.5%;
+            color: #3cb4bb;
         }
     </style>
     <script>
         "use strict";
-        var ctx, unit, gameLeft, gameTop, now, t, r = 0.6;
+        var ctx, unit, gameLeft, gameTop, now, t;
         var player = {
             x: 4.5,
             y: 13,
@@ -54,7 +55,20 @@
             cos: Math.PI / 2,
             reach: true,
             deltaX: 0,
-            deltaY: 0
+            deltaY: 0,
+            r: 0.6
+        };
+        var bmr = {
+            x: 0,
+            y: 0,
+            v: 16,
+            a: -28,
+            sin: 0,
+            cos: Math.PI / 2,
+            t: 500,
+            startTime: 0,
+            live: false,
+            r: 0.6
         };
         function n(x) {
             return x * unit;
@@ -93,20 +107,19 @@
                 e.clientX = evt.clientX;
                 e.clientY = evt.clientY;
             }
-            player.reach = false;
             var destX = u(e.clientX - gameLeft);
             var destY = u(e.clientY - gameTop);
-            if (9 - destX < r) {
-                destX = 9 - r;
+            if (9 - destX < player.r) {
+                destX = 9 - player.r;
             }
-            else if (destX < r) {
-                destX = r;
+            else if (destX < player.r) {
+                destX = player.r;
             }
-            if (destY - 10 < r) {
-                destY = 10 + r;
+            if (destY - 10 < player.r) {
+                destY = 10 + player.r;
             }
-            else if (16 - destY < r) {
-                destY = 16 - r;
+            else if (16 - destY < player.r) {
+                destY = 16 - player.r;
             }
             player.destX = destX;
             player.destY = destY;
@@ -117,12 +130,53 @@
             player.cos = deltaX / L;
             player.deltaX = deltaX;
             player.deltaY = deltaY;
+            player.reach = false;
+        }
+        function aboveTouchStart(evt) {
+            evt.preventDefault();
+            if (!bmr.live) {
+                var e = {};
+                if (evt.type === "touchstart") {
+                    e.clientX = evt.changedTouches[0].clientX;
+                    e.clientY = evt.changedTouches[0].clientY;
+                }
+                else {
+                    e.clientX = evt.clientX;
+                    e.clientY = evt.clientY;
+                }
+                var destX = u(e.clientX - gameLeft);
+                var destY = u(e.clientY - gameTop);
+                bmr.x = player.x;
+                bmr.y = player.y;
+                var deltaX = destX - bmr.x;
+                var deltaY = destY - bmr.y;
+                var L = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
+                bmr.sin = deltaX / L;
+                bmr.cos = deltaY / L;
+                bmr.live = true;
+                bmr.startTime = Date.now();
+            }
         }
         function render() {
             requestAnimationFrame(render);
             var _now = Date.now();
             t = (_now - now) / 1000;
             now = _now;
+            if (bmr.live) {
+                if (now - bmr.startTime >= bmr.t) {
+                    bmr.v += bmr.a * t;
+                }
+                bmr.x += bmr.v * bmr.sin * t;
+                bmr.y += bmr.v * bmr.cos * t;
+                if (bmr.y > 10) {
+                    if (bmr.x - bmr.r > 9 || bmr.x + bmr.r < 0 || bmr.y - bmr.r > 16) {
+                        bmr.live = false;
+                        bmr.v = 16;
+                    }
+                }
+            }
+
+
             player.x += player.v * player.cos * t;
             player.y += player.v * player.sin * t;
             if (player.deltaX) {
@@ -148,9 +202,15 @@
             ctx.fillRect(0, 0, view.width, n(10));
             ctx.fillStyle = "#f25e82";
             ctx.fillRect(0, n(10), view.width, n(6));
+            if (bmr.live) {
+                ctx.fillStyle = "#3cb4bb";
+                ctx.beginPath();
+                ctx.arc(n(bmr.x), n(bmr.y), n(bmr.r), 0, Math.PI * 2);
+                ctx.fill();
+            }
             ctx.fillStyle = "#6de2a9";
             ctx.beginPath();
-            ctx.arc(n(player.x), n(player.y), n(r), 0, Math.PI * 2);
+            ctx.arc(n(player.x), n(player.y), n(player.r), 0, Math.PI * 2);
             ctx.fill();
         }
         window.onload = function () {
@@ -158,6 +218,8 @@
             resize();
             below.addEventListener("mousedown", belowTouchStart);
             below.addEventListener("touchstart", belowTouchStart);
+            above.addEventListener("mousedown", aboveTouchStart);
+            above.addEventListener("touchstart", aboveTouchStart);
             now = Date.now();
             render();
             window.onresize = resize;
