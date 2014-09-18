@@ -68,7 +68,8 @@
             t: 500,
             startTime: 0,
             live: false,
-            r: 0.6
+            r: 0.6,
+            crisis: true
         };
         function n(x) {
             return x * unit;
@@ -151,9 +152,10 @@
                 var deltaX = destX - bmr.x;
                 var deltaY = destY - bmr.y;
                 var L = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
-                bmr.sin = deltaX / L;
-                bmr.cos = deltaY / L;
+                bmr.sin = deltaY / L;
+                bmr.cos = deltaX / L;
                 bmr.live = true;
+                bmr.crisis = true;
                 bmr.startTime = Date.now();
             }
         }
@@ -166,8 +168,35 @@
                 if (now - bmr.startTime >= bmr.t) {
                     bmr.v += bmr.a * t;
                 }
-                bmr.x += bmr.v * bmr.sin * t;
-                bmr.y += bmr.v * bmr.cos * t;
+                var bmry = bmr.y;
+                bmr.x += bmr.v * bmr.cos * t;
+                bmr.y += bmr.v * bmr.sin * t;
+                if (bmr.crisis && bmr.y > bmry) {
+                    bmr.crisis = false;
+                    //var _destX = player.x + player.v * player.cos * bmr.t/2;
+                    //var _destY = player.y + player.v * player.sin * bmr.t/2;
+                    //if (_destX < 0) {
+                    //    _destX = 0;
+                    //}
+                    //else if (_destX > 9) {
+                    //    _destX = 9;
+                    //}
+                    //if (_destY < 10) {
+                    //    _destY = 10;
+                    //}
+                    //else if (_destY > 16) {
+                    //    _destY = 16;
+                    //}
+                    var _destX = Math.random() * 9;
+                    var _destY = Math.random() * 3 + 13;
+                    var destX = _destX;
+                    var destY = _destY;
+                    var deltaX = destX - bmr.x;
+                    var deltaY = destY - bmr.y;
+                    var L = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
+                    bmr.sin = -deltaY / L;
+                    bmr.cos = -deltaX / L;
+                }
                 if (bmr.y > 10) {
                     if (bmr.x - bmr.r > 9 || bmr.x + bmr.r < 0 || bmr.y - bmr.r > 16) {
                         bmr.live = false;
