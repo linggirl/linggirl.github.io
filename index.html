@@ -20,6 +20,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            -webkit-transform: translate(-50%, -50%);
         }
 
         #view {
@@ -69,7 +70,9 @@
             startTime: 0,
             live: false,
             r: 0.6,
-            crisis: true
+            crisis: true,
+            get: false,
+            canGet: false
         };
         function n(x) {
             return x * unit;
@@ -164,46 +167,7 @@
             var _now = Date.now();
             t = (_now - now) / 1000;
             now = _now;
-            if (bmr.live) {
-                if (now - bmr.startTime >= bmr.t) {
-                    bmr.v += bmr.a * t;
-                }
-                var bmry = bmr.y;
-                bmr.x += bmr.v * bmr.cos * t;
-                bmr.y += bmr.v * bmr.sin * t;
-                if (bmr.crisis && bmr.y > bmry) {
-                    bmr.crisis = false;
-                    //var _destX = player.x + player.v * player.cos * bmr.t/2;
-                    //var _destY = player.y + player.v * player.sin * bmr.t/2;
-                    //if (_destX < 0) {
-                    //    _destX = 0;
-                    //}
-                    //else if (_destX > 9) {
-                    //    _destX = 9;
-                    //}
-                    //if (_destY < 10) {
-                    //    _destY = 10;
-                    //}
-                    //else if (_destY > 16) {
-                    //    _destY = 16;
-                    //}
-                    var _destX = Math.random() * 9;
-                    var _destY = Math.random() * 3 + 13;
-                    var destX = _destX;
-                    var destY = _destY;
-                    var deltaX = destX - bmr.x;
-                    var deltaY = destY - bmr.y;
-                    var L = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
-                    bmr.sin = -deltaY / L;
-                    bmr.cos = -deltaX / L;
-                }
-                if (bmr.y > 10) {
-                    if (bmr.x - bmr.r > 9 || bmr.x + bmr.r < 0 || bmr.y - bmr.r > 16) {
-                        bmr.live = false;
-                        bmr.v = 16;
-                    }
-                }
-            }
+
 
 
             player.x += player.v * player.cos * t;
@@ -227,6 +191,84 @@
                 player.x = player.destX;
                 player.y = player.destY;
             }
+            if (bmr.live) {
+                if (bmr.get) {
+                    var destX = player.x;
+                    var destY = player.y;
+                    var deltaX = destX - bmr.x;
+                    var deltaY = destY - bmr.y;
+                    var L = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
+                    if (L <= bmr.v * t) {
+                        bmr.get = false;
+                        bmr.live = false;
+                        bmr.v = 16;
+                    }
+                    else {
+                        bmr.sin = deltaY / L;
+                        bmr.cos = deltaX / L;
+                        bmr.x += bmr.v * bmr.cos * t;
+                        bmr.y += bmr.v * bmr.sin * t;
+                    }
+
+
+                }
+                else {
+                    if (now - bmr.startTime >= bmr.t) {
+                        bmr.v += bmr.a * t;
+                    }
+                    var bmry = bmr.y;
+                    bmr.x += bmr.v * bmr.cos * t;
+                    bmr.y += bmr.v * bmr.sin * t;
+                    if (bmr.crisis && bmr.y > bmry) {
+                        bmr.crisis = false;
+                        bmr.canGet = true;
+                        //var _destX = player.x + player.v * player.cos * bmr.t/2;
+                        //var _destY = player.y + player.v * player.sin * bmr.t/2;
+                        //if (_destX < 0) {
+                        //    _destX = 0;
+                        //}
+                        //else if (_destX > 9) {
+                        //    _destX = 9;
+                        //}
+                        //if (_destY < 10) {
+                        //    _destY = 10;
+                        //}
+                        //else if (_destY > 16) {
+                        //    _destY = 16;
+                        //}
+                        var _destX = Math.random() * 9;
+                        var _destY = Math.random() * 3 + 13;
+                        var destX = _destX;
+                        var destY = _destY;
+                        var deltaX = -(destX - bmr.x);
+                        var deltaY = -(destY - bmr.y);
+                        var L = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
+                        bmr.sin = deltaY / L;
+                        bmr.cos = deltaX / L;
+                    }
+                    if (bmr.y > 10) {
+                        if (bmr.x - bmr.r > 9 || bmr.x + bmr.r < 0 || bmr.y - bmr.r > 16) {
+                            bmr.live = false;
+                            bmr.canGet = false;
+                            bmr.v = 16;
+                        }
+                    }
+                    if (bmr.canGet) {
+                        var destX = player.x;
+                        var destY = player.y;
+                        var deltaX = destX - bmr.x;
+                        var deltaY = destY - bmr.y;
+                        var L = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
+                        if (L <= bmr.r + player.r) {
+                            bmr.v = 16;
+                            bmr.get = true;
+                            bmr.canGet = false;
+                        }
+                    }
+                }
+            }
+
+
             ctx.fillStyle = "#a080ef";
             ctx.fillRect(0, 0, view.width, n(10));
             ctx.fillStyle = "#f25e82";
