@@ -20,7 +20,6 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            -webkit-transform: translate(-50%, -50%);
         }
 
         #view {
@@ -57,8 +56,12 @@
             reach: true,
             deltaX: 0,
             deltaY: 0,
-            r: 0.6
+            r: 0.6,
+            track: []
         };
+        (function () {
+
+        })();
         var bmr = {
             x: 0,
             y: 0,
@@ -72,7 +75,9 @@
             r: 0.6,
             crisis: true,
             get: false,
-            canGet: false
+            canGet: false,
+            count: 0,
+            three: true
         };
         function n(x) {
             return x * unit;
@@ -191,6 +196,11 @@
                 player.x = player.destX;
                 player.y = player.destY;
             }
+
+
+
+
+
             if (bmr.live) {
                 if (bmr.get) {
                     var destX = player.x;
@@ -202,6 +212,7 @@
                         bmr.get = false;
                         bmr.live = false;
                         bmr.v = 16;
+                        bmr.count += 1;
                     }
                     else {
                         bmr.sin = deltaY / L;
@@ -251,6 +262,7 @@
                             bmr.live = false;
                             bmr.canGet = false;
                             bmr.v = 16;
+                            bmr.count = 0;
                         }
                     }
                     if (bmr.canGet) {
@@ -267,8 +279,21 @@
                     }
                 }
             }
-
-
+            if (bmr.three && bmr.count === 3) {
+                bmr.three = false;
+                player.v = 12;
+                for (var i = 0; i < 10; i++) {
+                    player.track[i] = { x: player.x, y: player.y };
+                }
+            }
+            if (bmr.count === 0) {
+                player.v = 9;
+                bmr.three = true;
+            }
+            if (bmr.count > 2) {
+                player.track.push({ x: player.x, y: player.y });
+                player.track.shift();
+            }
             ctx.fillStyle = "#a080ef";
             ctx.fillRect(0, 0, view.width, n(10));
             ctx.fillStyle = "#f25e82";
@@ -279,10 +304,21 @@
                 ctx.arc(n(bmr.x), n(bmr.y), n(bmr.r), 0, Math.PI * 2);
                 ctx.fill();
             }
-            ctx.fillStyle = "#6de2a9";
-            ctx.beginPath();
-            ctx.arc(n(player.x), n(player.y), n(player.r), 0, Math.PI * 2);
-            ctx.fill();
+            if (bmr.count > 2) {
+                for (var i = 0; i < 10; i++) {
+                    ctx.fillStyle = "rgba(109,226,169," + i * i / 100 + ")";
+                    var p = player.track[i];
+                    ctx.beginPath();
+                    ctx.arc(n(p.x), n(p.y), n(player.r), 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            else {
+                ctx.fillStyle = "rgba(109,226,169,1)";
+                ctx.beginPath();
+                ctx.arc(n(player.x), n(player.y), n(player.r), 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
         window.onload = function () {
             ctx = view.getContext("2d");
