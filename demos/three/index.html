@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style>
+        html {
+            height: 100%;
+        }
+
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        #info {
+            position: absolute;
+        }
+
+        #main {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+    <script src="three.js"></script>
+    <script src="cannon.js"></script>
+    <script>
+        "use strict";
+        var viewWidth, viewHeight, unit,
+            scene, camera, renderer, player;
+        function u(x) {
+            return x / unit;
+        }
+        function n(x) {
+            return x * unit;
+        }
+        function resize() {
+            var ratio = 9 / 16;
+            var winRatio = window.innerWidth / window.innerHeight;
+            if (ratio < winRatio) {
+                viewWidth = window.innerHeight * ratio;
+                viewHeight = window.innerHeight;
+            }
+            else {
+                viewWidth = window.innerWidth;
+                viewHeight = window.innerWidth / ratio;
+            }
+            main.style.width = viewWidth + "px";
+            main.style.height = viewHeight + "px";
+            unit = viewWidth / 9;
+        }
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.OrthographicCamera(-viewWidth / 2, viewWidth / 2, viewHeight / 2, -viewHeight / 2, 0, 10);
+            scene.add(camera);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(viewWidth, viewHeight);
+            main.appendChild(renderer.domElement);
+            var geometry = new THREE.PlaneGeometry(n(9), n(10));
+            var material = new THREE.MeshBasicMaterial({ color: 0xa080ef });
+            var plane = new THREE.Mesh(geometry, material);
+            plane.position.set(0, n(3), -10);
+            scene.add(plane);
+            var geometry = new THREE.PlaneGeometry(n(9), n(6));
+            var material = new THREE.MeshBasicMaterial({ color: 0xf25e82 });
+            var plane = new THREE.Mesh(geometry, material);
+            plane.position.set(0, n(-5), -9);
+            scene.add(plane);
+            var geometry = new THREE.CircleGeometry(n(0.6), 32);
+            var material = new THREE.MeshBasicMaterial({ color: 0x6de2a9 });
+            player = new THREE.Mesh(geometry, material);
+            player.position.set(0, n(-5), 0);
+            scene.add(player);
+        }
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        window.onload = function () {
+            resize();
+            init();
+            animate();
+            window.onresize = function () {
+                resize();
+                camera.aspect = viewWidth / viewHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(viewWidth, viewHeight);
+            };
+        };
+    </script>
+</head>
+<body>
+    <div id="info"></div>
+    <div id="main"></div>
+</body>
+</html>
