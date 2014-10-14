@@ -218,6 +218,7 @@
                         camera = new THREE.OrthographicCamera(-n(w / 2), n(w / 2), n(h / 2), -n(h / 2), 0, 10);
                         scene.add(camera);
                         renderer = new THREE.WebGLRenderer({ canvas: view, antialias: true });
+                        renderer.devicePixelRatio = 1;
                         renderer.setViewport(0, 0, n(w), n(h));
                         renderer.setClearColor(0xa080ef, 1);
                         info.innerHTML = renderer.devicePixelRatio + "";
