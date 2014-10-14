@@ -248,7 +248,7 @@
                             return plane;
                         }());
                         parent.add(function () {
-                            var geometry = new THREE.CircleGeometry(n(player.r), 32);
+                            var geometry = new THREE.CircleGeometry(n(player.r), 64);
                             var material = color(0x6de2a9);
                             var mesh = new THREE.Mesh(geometry, material);
                             mesh.position.set(n(player.s.x), n(player.s.y), player.z);
@@ -256,7 +256,7 @@
                             return mesh;
                         }());
                         (function () {
-                            var geometry = new THREE.CircleGeometry(n(bmr.r), 32);
+                            var geometry = new THREE.CircleGeometry(n(bmr.r), 64);
                             var material = color(0x3cb4bb);
                             bmr.mesh = new THREE.Mesh(geometry, material);
                         }());
