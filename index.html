@@ -213,6 +213,7 @@
                         renderer = new THREE.WebGLRenderer({ canvas: view, antialias: true });
                         renderer.setViewport(0, 0, n(w), n(h));
                         renderer.setClearColor(0xa080ef, 1);
+                        renderer.devicePixelRatio = 1;
                         clock = new THREE.Clock();
                         stats = new Stats();
                         stats.domElement.style.position = 'absolute';
