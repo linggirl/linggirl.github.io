@@ -17,329 +17,282 @@
 
         .center {
             position: absolute;
-            top: 50%;
+            /*top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);*/
         }
 
         #view {
-            position: absolute;
             display: block;
         }
-
-        #touch {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-        }
-
-        #above {
-            height: 62.5%;
-        }
-
-        #below {
-            height: 37.5%;
-            color: #3cb4bb;
-        }
     </style>
+    <script src="three.js"></script>
+    <script src="Stats.js"></script>
     <script>
-        "use strict";
-        var ctx, unit, gameLeft, gameTop, now, t;
-        var player = {
-            x: 4.5,
-            y: 13,
-            destX: 4.5,
-            destY: 13,
-            v: 9,
-            sin: 0,
-            cos: Math.PI / 2,
-            reach: true,
-            deltaX: 0,
-            deltaY: 0,
-            r: 0.6,
-            track: []
-        };
         (function () {
-
-        })();
-        var bmr = {
-            x: 0,
-            y: 0,
-            v: 16,
-            a: -28,
-            sin: 0,
-            cos: Math.PI / 2,
-            t: 500,
-            startTime: 0,
-            live: false,
-            r: 0.6,
-            crisis: true,
-            get: false,
-            canGet: false,
-            count: 0,
-            three: true
-        };
-        function n(x) {
-            return x * unit;
-        }
-        function u(x) {
-            return x / unit;
-        }
-        function resize() {
-            var ratio = 9 / 16;
-            var winRatio = window.innerWidth / window.innerHeight;
-            var width, height;
-            if (ratio < winRatio) {
-                width = window.innerHeight * ratio;
-                height = window.innerHeight;
+            "use strict";
+            var w = 9, h = 16, d = 10;
+            var unit = 0, varyingUnit = 0;
+            function n(x) {
+                return x * unit;
             }
-            else {
-                width = window.innerWidth;
-                height = window.innerWidth / ratio;
+            function u(x) {
+                return x / unit;
             }
-            game.style.width = width + "px";
-            game.style.height = height + "px";
-            view.width = width;
-            view.height = height;
-            unit = width / 9;
-            gameLeft = game.getBoundingClientRect().left;
-            gameTop = game.getBoundingClientRect().top;
-        }
-        function belowTouchStart(evt) {
-            evt.preventDefault();
-            var e = {};
-            if (evt.type === "touchstart") {
-                e.clientX = evt.changedTouches[0].clientX;
-                e.clientY = evt.changedTouches[0].clientY;
+            function vn(x) {
+                return x * varyingUnit;
             }
-            else {
-                e.clientX = evt.clientX;
-                e.clientY = evt.clientY;
+            function vu(x) {
+                return x / varyingUnit;
             }
-            var destX = u(e.clientX - gameLeft);
-            var destY = u(e.clientY - gameTop);
-            if (9 - destX < player.r) {
-                destX = 9 - player.r;
-            }
-            else if (destX < player.r) {
-                destX = player.r;
-            }
-            if (destY - 10 < player.r) {
-                destY = 10 + player.r;
-            }
-            else if (16 - destY < player.r) {
-                destY = 16 - player.r;
-            }
-            player.destX = destX;
-            player.destY = destY;
-            var deltaX = player.destX - player.x;
-            var deltaY = player.destY - player.y;
-            var L = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
-            player.sin = deltaY / L;
-            player.cos = deltaX / L;
-            player.deltaX = deltaX;
-            player.deltaY = deltaY;
-            player.reach = false;
-        }
-        function aboveTouchStart(evt) {
-            evt.preventDefault();
-            if (!bmr.live) {
-                var e = {};
-                if (evt.type === "touchstart") {
-                    e.clientX = evt.changedTouches[0].clientX;
-                    e.clientY = evt.changedTouches[0].clientY;
-                }
-                else {
-                    e.clientX = evt.clientX;
-                    e.clientY = evt.clientY;
-                }
-                var destX = u(e.clientX - gameLeft);
-                var destY = u(e.clientY - gameTop);
-                bmr.x = player.x;
-                bmr.y = player.y;
-                var deltaX = destX - bmr.x;
-                var deltaY = destY - bmr.y;
-                var L = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
-                bmr.sin = deltaY / L;
-                bmr.cos = deltaX / L;
-                bmr.live = true;
-                bmr.crisis = true;
-                bmr.startTime = Date.now();
-            }
-        }
-        function render() {
-            requestAnimationFrame(render);
-            var _now = Date.now();
-            t = (_now - now) / 1000;
-            now = _now;
-
-
-
-            player.x += player.v * player.cos * t;
-            player.y += player.v * player.sin * t;
-            if (player.deltaX) {
-                if ((player.destX - player.x) / player.deltaX <= 0) {
-                    player.reach = true;
-                }
-            }
-            else {
-                if (player.deltaY) {
-                    if ((player.destY - player.y) / player.deltaY <= 0) {
-                        player.reach = true;
+            (function () {
+                var player = {
+                    mesh: null,
+                    r: 0.6,
+                    z: 0,
+                    s: new THREE.Vector2(w / 2, d + (h - d) / 2),
+                    ss: new THREE.Vector2(w / 2, d + (h - d) / 2),
+                    v: new THREE.Vector2(),
+                    speed: 9,
+                    fulfilled: false,
+                    move: function (t) {
+                        if (!this.fulfilled) {
+                            this.s.add(new THREE.Vector2().copy(this.v).multiplyScalar(t));
+                            if (this.v.x) {
+                                if ((this.ss.x - this.s.x) / this.v.x <= 0) {
+                                    this.fulfilled = true;
+                                }
+                            }
+                            else {
+                                if (this.v.y) {
+                                    if ((this.ss.y - this.s.y) / this.v.y <= 0) {
+                                        this.fulfilled = true;
+                                    }
+                                }
+                                else {
+                                    this.fulfilled = true;
+                                }
+                            }
+                            if (this.fulfilled) {
+                                this.s.copy(this.ss);
+                            }
+                            this.mesh.position.setX(n(this.s.x)).setY(n(this.s.y));
+                        }
                     }
+                };
+                window.player = player;
+            }());
+            (function () {
+                var bmr = {
+                    mesh: null,
+                    r: 0.6,
+                    z: -1,
+                    s: new THREE.Vector2(),
+                    ss: new THREE.Vector2(),
+                    v: new THREE.Vector2(),
+                    a: new THREE.Vector2(),
+                    speed: 16,
+                    aSpeed: -16,
+                    live: false,
+                    farthest: false,
+                    inside: false,
+                    move: function (t) {
+                        if (this.live) {
+                            if (this.farthest) {
+                                if (this.inside) {
+                                    this.ss.copy(player.s);
+                                    this.v.subVectors(this.ss, this.s).setLength(9);
+                                    this.a.set(0, 0);
+                                    steps(t);
+                                    if (this.s.distanceTo(this.ss) < new THREE.Vector2().copy(this.v).multiplyScalar(t).length()) {
+                                        this.live = false;
+                                    }
+                                }
+                                else {
+                                    steps(t);
+                                    if (this.s.distanceTo(player.s) <= this.r + player.r) {
+                                        this.inside = true;
+                                    }
+                                    else if (bmr.s.x + bmr.r < 0 || bmr.s.x - bmr.r > w || bmr.s.y - bmr.r > h) {
+                                        this.live = false;
+                                    }
+                                }
+                            }
+                            else {
+                                var y = this.s.y;
+                                steps(t);
+                                if (y <= this.s.y) {
+                                    this.farthest = true;
+                                    this.ss.set(Math.random() * w, Math.random() * (h - d) / 2 + (h + d) / 2);
+                                    this.a.subVectors(this.ss, this.s).setLength(-this.aSpeed);
+                                    this.v.set(0, 0);
+                                }
+                            }
+                            if (!this.live) {
+                                this.farthest = false;
+                                this.inside = false;
+                                three.parent.remove(bmr.mesh);
+                            }
+                            this.mesh.position.setX(n(this.s.x)).setY(n(this.s.y));
+                        }
+                    }
+                };
+                function steps(t) {
+                    bmr.v.add(new THREE.Vector2().copy(bmr.a).multiplyScalar(t));
+                    bmr.s.add(new THREE.Vector2().copy(bmr.v).multiplyScalar(t));
                 }
-                else {
-                    player.reach = true;
-                }
-            }
-            if (player.reach) {
-                player.x = player.destX;
-                player.y = player.destY;
-            }
-
-
-
-
-
-            if (bmr.live) {
-                if (bmr.get) {
-                    var destX = player.x;
-                    var destY = player.y;
-                    var deltaX = destX - bmr.x;
-                    var deltaY = destY - bmr.y;
-                    var L = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
-                    if (L <= bmr.v * t) {
-                        bmr.get = false;
-                        bmr.live = false;
-                        bmr.v = 16;
-                        bmr.count += 1;
+                window.bmr = bmr;
+            }());
+            (function () {
+                var left = 0, top = 0, ratio = w / h,
+                    rectLT = new THREE.Vector2(player.r, d + player.r),
+                    rectRB = new THREE.Vector2(w - player.r, h - player.r);
+                var vi = {
+                    resize: function () {
+                        var width = 0, height = 0;
+                        var winRatio = window.innerWidth / window.innerHeight;
+                        if (ratio < winRatio) {
+                            width = window.innerHeight * ratio;
+                            height = window.innerHeight;
+                        }
+                        else {
+                            width = window.innerWidth;
+                            height = window.innerWidth / ratio;
+                        }
+                        view.width = width;
+                        view.height = height;
+                        var bound = view.getBoundingClientRect();
+                        left = bound.left;
+                        top = bound.top;
+                        varyingUnit = width / w;
+                    },
+                    on: function () {
+                        view.addEventListener("mousedown", listener);
+                        view.addEventListener("touchstart", listener);
+                    }
+                };
+                var listener = function (evt) {
+                    evt.preventDefault();
+                    var e = new THREE.Vector2();
+                    if (evt.type === "touchstart") {
+                        var touch = evt.changedTouches[0];
+                        e.set(touch.clientX, touch.clientY);
                     }
                     else {
-                        bmr.sin = deltaY / L;
-                        bmr.cos = deltaX / L;
-                        bmr.x += bmr.v * bmr.cos * t;
-                        bmr.y += bmr.v * bmr.sin * t;
+                        e.set(evt.clientX, evt.clientY);
                     }
-
-
-                }
-                else {
-                    if (now - bmr.startTime >= bmr.t) {
-                        bmr.v += bmr.a * t;
+                    e.set(vu(e.x - left), vu(e.y - top));
+                    if (e.y > d) {
+                        e.max(rectLT).min(rectRB);
+                        player.ss.copy(e);
+                        player.v.subVectors(player.ss, player.s).setLength(player.speed);
+                        player.fulfilled = false;
                     }
-                    var bmry = bmr.y;
-                    bmr.x += bmr.v * bmr.cos * t;
-                    bmr.y += bmr.v * bmr.sin * t;
-                    if (bmr.crisis && bmr.y > bmry) {
-                        bmr.crisis = false;
-                        bmr.canGet = true;
-                        //var _destX = player.x + player.v * player.cos * bmr.t/2;
-                        //var _destY = player.y + player.v * player.sin * bmr.t/2;
-                        //if (_destX < 0) {
-                        //    _destX = 0;
-                        //}
-                        //else if (_destX > 9) {
-                        //    _destX = 9;
-                        //}
-                        //if (_destY < 10) {
-                        //    _destY = 10;
-                        //}
-                        //else if (_destY > 16) {
-                        //    _destY = 16;
-                        //}
-                        var _destX = Math.random() * 9;
-                        var _destY = Math.random() * 3 + 13;
-                        var destX = _destX;
-                        var destY = _destY;
-                        var deltaX = -(destX - bmr.x);
-                        var deltaY = -(destY - bmr.y);
-                        var L = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
-                        bmr.sin = deltaY / L;
-                        bmr.cos = deltaX / L;
-                    }
-                    if (bmr.y > 10) {
-                        if (bmr.x - bmr.r > 9 || bmr.x + bmr.r < 0 || bmr.y - bmr.r > 16) {
-                            bmr.live = false;
-                            bmr.canGet = false;
-                            bmr.v = 16;
-                            bmr.count = 0;
+                    else {
+                        if (!bmr.live) {
+                            bmr.s.copy(player.s);
+                            bmr.ss.copy(e);
+                            bmr.v.subVectors(bmr.ss, bmr.s).setLength(bmr.speed);
+                            bmr.a.copy(bmr.v).setLength(bmr.aSpeed);
+                            bmr.live = true;
+                            three.parent.add(bmr.mesh);
                         }
                     }
-                    if (bmr.canGet) {
-                        var destX = player.x;
-                        var destY = player.y;
-                        var deltaX = destX - bmr.x;
-                        var deltaY = destY - bmr.y;
-                        var L = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
-                        if (L <= bmr.r + player.r) {
-                            bmr.v = 16;
-                            bmr.get = true;
-                            bmr.canGet = false;
-                        }
+                }.bind(vi);
+                window.vi = vi;
+            }());
+            (function () {
+                var scene, camera, renderer, clock, parent, handle;
+                var stats;
+                var three = {
+                    parent: null,
+                    init: function () {
+                        scene = new THREE.Scene();
+                        camera = new THREE.OrthographicCamera(-n(w / 2), n(w / 2), n(h / 2), -n(h / 2), 0, 10);
+                        scene.add(camera);
+                        renderer = new THREE.WebGLRenderer({ canvas: view, antialias: true });
+                        renderer.setViewport(0, 0, n(w), n(h));
+                        clock = new THREE.Clock();
+                        stats = new Stats();
+                        stats.domElement.style.position = 'absolute';
+                        stats.domElement.style.top = '0px';
+                        stats.domElement.style.zIndex = 10;
+                        document.body.appendChild(stats.domElement);
+                        parent = new THREE.Object3D();
+                        this.parent = parent;
+                        parent.scale.y = -1;
+                        parent.position.set(-n(w / 2), n(h / 2), 0);
+                        scene.add(parent);
+                        parent.add(function () {
+                            var geometry = new THREE.PlaneGeometry(n(w), n(d));
+                            var material = color(0xa080ef);
+                            var plane = new THREE.Mesh(geometry, material);
+                            plane.position.set(n(w / 2), n(d / 2), -10);
+                            return plane;
+                        }());
+                        parent.add(function () {
+                            var geometry = new THREE.PlaneGeometry(n(w), n(h - d));
+                            var material = color(0xf25e82);
+                            var plane = new THREE.Mesh(geometry, material);
+                            plane.position.set(n(w / 2), n(d + (h - d) / 2), -9);
+                            return plane;
+                        }());
+                        parent.add(function () {
+                            var geometry = new THREE.CircleGeometry(n(player.r), 32);
+                            var material = color(0x6de2a9);
+                            var mesh = new THREE.Mesh(geometry, material);
+                            mesh.position.set(n(player.s.x), n(player.s.y), player.z);
+                            player.mesh = mesh;
+                            return mesh;
+                        }());
+                        (function () {
+                            var geometry = new THREE.CircleGeometry(n(bmr.r), 32);
+                            var material = color(0x3cb4bb);
+                            bmr.mesh = new THREE.Mesh(geometry, material);
+                        }());
+                    },
+                    start: function () {
+                        clock.start();
+                        render();
+                    },
+                    stop: function () {
+                        cancelAnimationFrame(handle);
+                    },
+                    resize: function () {
+                        renderer.setViewport(0, 0, vn(w), vn(h));
                     }
+                };
+                function color(x) {
+                    return new THREE.MeshBasicMaterial({
+                        color: x,
+                        side: THREE.BackSide
+                    });
                 }
-            }
-            if (bmr.three && bmr.count === 3) {
-                bmr.three = false;
-                player.v = 12;
-                for (var i = 0; i < 10; i++) {
-                    player.track[i] = { x: player.x, y: player.y };
+                function render() {
+                    handle = requestAnimationFrame(render);
+                    var t = clock.getDelta();
+                    player.move(t);
+                    bmr.move(t);
+                    renderer.render(scene, camera);
+                    stats.update();
                 }
-            }
-            if (bmr.count === 0) {
-                player.v = 9;
-                bmr.three = true;
-            }
-            if (bmr.count > 2) {
-                player.track.push({ x: player.x, y: player.y });
-                player.track.shift();
-            }
-            ctx.fillStyle = "#a080ef";
-            ctx.fillRect(0, 0, view.width, n(10));
-            ctx.fillStyle = "#f25e82";
-            ctx.fillRect(0, n(10), view.width, n(6));
-            if (bmr.live) {
-                ctx.fillStyle = "#3cb4bb";
-                ctx.beginPath();
-                ctx.arc(n(bmr.x), n(bmr.y), n(bmr.r), 0, Math.PI * 2);
-                ctx.fill();
-            }
-            if (bmr.count > 2) {
-                for (var i = 0; i < 10; i++) {
-                    ctx.fillStyle = "rgba(109,226,169," + i * i / 100 + ")";
-                    var p = player.track[i];
-                    ctx.beginPath();
-                    ctx.arc(n(p.x), n(p.y), n(player.r), 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
-            else {
-                ctx.fillStyle = "rgba(109,226,169,1)";
-                ctx.beginPath();
-                ctx.arc(n(player.x), n(player.y), n(player.r), 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-        window.onload = function () {
-            ctx = view.getContext("2d");
-            resize();
-            below.addEventListener("mousedown", belowTouchStart);
-            below.addEventListener("touchstart", belowTouchStart);
-            above.addEventListener("mousedown", aboveTouchStart);
-            above.addEventListener("touchstart", aboveTouchStart);
-            now = Date.now();
-            render();
-            window.onresize = resize;
-        };
+                window.three = three;
+            }());
+            window.onload = function () {
+                vi.resize();
+                unit = view.width / w;
+                three.init();
+                three.start();
+                vi.on();
+                window.onresize = function () {
+                    vi.resize();
+                    three.resize();
+                };
+            };
+        }());
     </script>
 </head>
 <body>
-    <div id="game" class="center">
-        <canvas id="view"></canvas>
-        <div id="touch">
-            <div id="above"></div>
-            <div id="below"></div>
-        </div>
-    </div>
+    <canvas id="view" class="center"></canvas>
 </body>
 </html>
