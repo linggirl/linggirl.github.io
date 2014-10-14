@@ -233,6 +233,9 @@
                         parent.scale.y = -1;
                         parent.position.set(-n(w / 2), n(h / 2), 0);
                         scene.add(parent);
+                        setTimeout(function () {
+                            info.innerHTML = renderer.context.getContextAttributes().antialias + "";
+                        }, 3000);
                         parent.add(function () {
                             var geometry = new THREE.PlaneGeometry(n(w), n(d));
                             var material = color(0xa080ef);
