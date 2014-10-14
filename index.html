@@ -248,7 +248,7 @@
                             return plane;
                         }());
                         parent.add(function () {
-                            var geometry = new THREE.CircleGeometry(n(player.r), 16);
+                            var geometry = new THREE.CircleGeometry(n(player.r), 8);
                             var material = color(0x6de2a9);
                             var mesh = new THREE.Mesh(geometry, material);
                             mesh.position.set(n(player.s.x), n(player.s.y), player.z);
