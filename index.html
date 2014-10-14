@@ -91,8 +91,8 @@
                     ss: new THREE.Vector2(),
                     v: new THREE.Vector2(),
                     a: new THREE.Vector2(),
-                    speed: 16,
-                    aSpeed: -16,
+                    speed: 25,
+                    aSpeed: -25,
                     live: false,
                     farthest: false,
                     inside: false,
@@ -212,6 +212,7 @@
                         scene.add(camera);
                         renderer = new THREE.WebGLRenderer({ canvas: view, antialias: true });
                         renderer.setViewport(0, 0, n(w), n(h));
+                        renderer.setClearColor(0xa080ef, 1);
                         clock = new THREE.Clock();
                         stats = new Stats();
                         stats.domElement.style.position = 'absolute';
